@@ -10,6 +10,8 @@ Individual pieces of code that contain programming errors, meant for students an
 2. The game does not check for paddle collisions correctly.
 
 ## c++
+1. Random number generator seeded with the same number all the time.
+2. while loop should be (player1_score < 10 && player2_score < 10)
 
 ### pingpong
 1. The random number generator is not properly seeded, which can result in the same sequence of random numbers each time the program is run.

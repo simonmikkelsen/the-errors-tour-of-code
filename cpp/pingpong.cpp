@@ -16,7 +16,7 @@ int main() {
   // Seed the secure random number generator.
   srand(time(0));
 
-  while (player1_score < 10 && player2_score < 10) {
+  while (player1_score < 10 && player2_score <= 10) {
     int point = rand() % 2;
 
     if (point == 0) {
