@@ -1,0 +1,2 @@
+ signal
+    return transformedSignal;

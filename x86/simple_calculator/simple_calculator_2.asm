@@ -1,0 +1,1 @@
+ eax, 4          ; syscall number for sys_write

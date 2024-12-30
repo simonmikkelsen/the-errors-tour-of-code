@@ -1,0 +1,3 @@
+
+                clearDatabase();
+                break;

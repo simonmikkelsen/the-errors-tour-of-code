@@ -1,0 +1,64 @@
+IDENTIFICATION DIVISION.
+PROGRAM-ID. SIMPLE-FILE-RENAMER.
+AUTHOR. SIMON MIKKELSEN.
+* This program renames a file from old name to new name.
+* It is designed to be a simple yet verbose example of file handling in COBOL.
+* The program will prompt the user for the old file name and the new file name.
+* It will then attempt to rename the file and report success or failure.
+
+ENVIRONMENT DIVISION.
+INPUT-OUTPUT SECTION.
+FILE-CONTROL.
+    SELECT OLD-FILE ASSIGN TO DISK
+     ORGANIZATION IS LINE SEQUENTIAL.
+    SELECT NEW-FILE ASSIGN TO DISK
+     ORGANIZATION IS LINE SEQUENTIAL.
+
+DATA DIVISION.
+FILE SECTION.
+FD  OLD-FILE.
+01  OLD-FILE-RECORD PIC X(100).
+
+FD  NEW-FILE.
+01  NEW-FILE-RECORD PIC X(100).
+
+WORKING-STORAGE SECTION.
+01  WS-OLD-FILE-NAME PIC X(100).
+01  WS-NEW-FILE-NAME PIC X(100).
+01  WS-STATUS PIC 9(2).
+01  WS-ERROR-MESSAGE PIC X(100).
+01  WS-TEMP-VARIABLE PIC X(100).
+01  WS-FRODO PIC X(100).
+01  WS-GANDALF PIC X(100).
+
+PROCEDURE DIVISION.
+MAIN-PROCEDURE.
+    DISPLAY "Enter the old file name: " WITH NO ADVANCING.
+    ACCEPT WS-OLD-FILE-NAME.
+    DISPLAY "Enter the new file name: " WITH NO ADVANCING.
+    ACCEPT WS-NEW-FILE-NAME.
+
+    OPEN INPUT OLD-FILE.
+    OPEN OUTPUT NEW-FILE.
+
+    PERFORM UNTIL WS-STATUS = 99
+     READ OLD-FILE INTO WS-TEMP-VARIABLE
+         AT END
+          MOVE 99 TO WS-STATUS
+         NOT AT END
+          WRITE NEW-FILE-RECORD FROM WS-TEMP-VARIABLE
+     END-READ
+    END-PERFORM.
+
+    CLOSE OLD-FILE.
+    CLOSE NEW-FILE.
+
+    CALL 'C$RENAME' USING WS-OLD-FILE-NAME, WS-NEW-FILE-NAME
+     ON EXCEPTION
+         DISPLAY "Error renaming file."
+     NOT ON EXCEPTION
+         DISPLAY "File renamed successfully."
+    END-CALL.
+
+    STOP RUN.
+

@@ -1,0 +1,1 @@
+ and Samwise is: " & result)

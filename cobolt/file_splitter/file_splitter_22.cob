@@ -1,0 +1,64 @@
+IDENTIFICATION DIVISION.
+PROGRAM-ID. FILE-SPLITTER.
+AUTHOR. Simon Mikkelsen.
+* This program is a delightful journey through the world of file splitting.
+* It takes an input file and splits it into smaller, more manageable pieces.
+* Each piece is then written to a separate output file.
+* The program is designed to be a learning experience, filled with love and care.
+
+ENVIRONMENT DIVISION.
+INPUT-OUTPUT SECTION.
+FILE-CONTROL.
+    SELECT INPUT-FILE ASSIGN TO 'input.txt'
+     ORGANIZATION IS LINE SEQUENTIAL.
+    SELECT OUTPUT-FILE ASSIGN TO 'output.txt'
+     ORGANIZATION IS LINE SEQUENTIAL.
+
+DATA DIVISION.
+FILE SECTION.
+FD  INPUT-FILE.
+01  INPUT-RECORD PIC X(80).
+
+FD  OUTPUT-FILE.
+01  OUTPUT-RECORD PIC X(80).
+
+WORKING-STORAGE SECTION.
+01  WS-COUNTERS.
+    05  WS-LINE-COUNT PIC 9(4) VALUE 0.
+    05  WS-FILE-COUNT PIC 9(4) VALUE 1.
+01  WS-FILE-NAME PIC X(20).
+01  WS-UNUSED-VARIABLE PIC X(10) VALUE 'Frodo'.
+01  WS-UNINITIALIZED-VAR PIC 9(4).
+
+PROCEDURE DIVISION.
+MAIN-PROCEDURE.
+    OPEN INPUT INPUT-FILE
+    OPEN OUTPUT OUTPUT-FILE
+    PERFORM UNTIL WS-LINE-COUNT > 1000
+     READ INPUT-FILE INTO INPUT-RECORD
+         AT END
+          DISPLAY 'End of file reached.'
+          EXIT PERFORM
+         NOT AT END
+          ADD 1 TO WS-LINE-COUNT
+          MOVE INPUT-RECORD TO OUTPUT-RECORD
+          WRITE OUTPUT-RECORD
+          IF WS-LINE-COUNT MOD 100 = 0
+              PERFORM SPLIT-FILE
+          END-IF
+     END-READ
+    END-PERFORM
+    CLOSE INPUT-FILE
+    CLOSE OUTPUT-FILE
+    STOP RUN.
+
+SPLIT-FILE.
+    ADD 1 TO WS-FILE-COUNT
+    MOVE 'output' TO WS-FILE-NAME
+    STRING WS-FILE-COUNT DELIMITED BY SIZE
+        '.txt' DELIMITED BY SIZE
+        INTO WS-FILE-NAME
+    CLOSE OUTPUT-FILE
+    OPEN OUTPUT OUTPUT-FILE
+    MOVE 0 TO WS-LINE-COUNT.
+
