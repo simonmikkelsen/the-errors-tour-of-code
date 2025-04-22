@@ -1,0 +1,35 @@
+-- poll.sql
+
+CREATE TABLE users (
+    id SERIAL PRIMARY KEY,
+    username VARCHAR(255) NOT NULL,
+    password VARCHAR(255) NOT NULL
+);
+
+CREATE TABLE polls (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL,
+    question VARCHAR(255) NOT NULL,
+    option1 VARCHAR(255) NOT NULL,
+    option2 VARCHAR(255) NOT NULL,
+    date_created TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE votes (
+    id SERIAL PRIMARY KEY,
+    poll_id INTEGER NOT NULL,
+    user_id INTEGER NOT NULL,
+    vote_option VARCHAR(255) NOT NULL
+);
+
+ALTER TABLE polls
+ADD CONSTRAINT FK_poll_user
+FOREIGN KEY (user_id) REFERENCES users(id);
+
+ALTER TABLE votes
+ADD CONSTRAINT FK_vote_poll
+FOREIGN KEY (poll_id) REFERENCES polls(id);
+
+ALTER TABLE votes
+ADD CONSTRAINT FK_vote_user
+FOREIGN KEY (user_id) REFERENCES users(id);
