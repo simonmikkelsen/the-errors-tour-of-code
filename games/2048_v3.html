@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>2048 Game</title>
+  <style>
+    :root {
+      --bg-color: #faf8ef;
+      --grid-color: #bbada0;
+      --tile-color: #eee4da;
+      --text-color: #776e65;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg-color: #1a1a1a;
+        --grid-color: #444;
+        --tile-color: #333;
+        --text-color: #fff;
+      }
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      touch-action: none;
+    }
+    #score {
+      font-size: 24px;
+      margin: 20px 0;
+    }
+    #grid {
+      background: var(--grid-color);
+      border-radius: 6px;
+      padding: 15px;
+      position: relative;
+      width: 340px;
+      height: 340px;
+    }
+    .cell {
+      background: rgba(238, 228, 218, 0.35);
+      border-radius: 3px;
+      position: absolute;
+      width: 71.25px;
+      height: 71.25px;
+      margin: 7.5px;
+    }
+    .tile {
+      position: absolute;
+      background: var(--tile-color);
+      border-radius: 3px;
+      width: 71.25px;
+      height: 71.25px;
+      line-height: 71.25px;
+      text-align: center;
+      font-weight: bold;
+      font-size: 24px;
+      transition: all 0.15s ease-in-out;
+      z-index: 1;
+    }
+    #new-game {
+      margin-top: 20px;
+      padding: 10px 20px;
+      background: var(--grid-color);
+      color: var(--text-color);
+      border: none;
+      border-radius: 3px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div id="score">Score: 0</div>
+  <div id="grid"></div>
+  <button id="new-game">New Game</button>
+
+  <script>
+    class Game2048 {
+      constructor() {
+        this.grid = Array(4).fill().map(() => Array(4).fill(0));
+        this.score = 0;
+        this.setupGrid();
+        this.setupEventListeners();
+        this.loadGame();
+      }
+
+      setupGrid() {
+        const gridElement = document.getElementById('grid');
+        gridElement.innerHTML = '';
+        
+        // Create background cells
+        for (let y = 0; y < 4; y++) {
+          for (let x = 0; x < 4; x++) {
+            const cell = document.createElement('div');
+            cell.className = 'cell';
+            cell.style.left = `${x * 86}px`;
+            cell.style.top = `${y * 86}px`;
+            gridElement.appendChild(cell);
+          }
+        }
+      }
+
+      setupEventListeners() {
+        document.addEventListener('keydown', this.handleKeyPress.bind(this));
+        document.getElementById('new-game').addEventListener('click', () => this.newGame());
+
+        let touchStartX, touchStartY;
+        document.addEventListener('touchstart', (e) => {
+          touchStartX = e.touches[0].clientX;
+          touchStartY = e.touches[0].clientY;
+        });
+
+        document.addEventListener('touchend', (e) => {
+          const touchEndX = e.changedTouches[0].clientX;
+          const touchEndY = e.changedTouches[0].clientY;
+          const dx = touchEndX - touchStartX;
+          const dy = touchEndY - touchStartY;
+
+          if (Math.abs(dx) > Math.abs(dy)) {
+            if (dx > 0) this.move('right');
+            else this.move('left');
+          } else {
+            if (dy > 0) this.move('down');
+            else this.move('up');
+          }
+        });
+      }
+
+      handleKeyPress(e) {
+        switch(e.key) {
+          case 'ArrowUp': this.move('up'); break;
+          case 'ArrowDown': this.move('down'); break;
+          case 'ArrowLeft': this.move('left'); break;
+          case 'ArrowRight': this.move('right'); break;
+        }
+      }
+
+      move(direction) {
+        const oldGrid = JSON.stringify(this.grid);
+        let moved = false;
+
+        switch(direction) {
+          case 'up':
+            for (let x = 0; x < 4; x++) {
+              moved = this.mergeLine([this.grid[0][x], this.grid[1][x], this.grid[2][x], this.grid[3][x]], 0, x) || moved;
+            }
+            break;
+          case 'down':
+            for (let x = 0; x < 4; x++) {
+              moved = this.mergeLine([this.grid[3][x], this.grid[2][x], this.grid[1][x], this.grid[0][x]], 3, x) || moved;
+            }
+            break;
+          case 'left':
+            for (let y = 0; y < 4; y++) {
+              moved = this.mergeLine(this.grid[y], y, 0) || moved;
+            }
+            break;
+          case 'right':
+            for (let y = 0; y < 4; y++) {
+              moved = this.mergeLine(this.grid[y].slice().reverse(), y, 3) || moved;
+            }
+            break;
+        }
+
+        if (moved) {
+          this.addNewTile();
+          this.updateDisplay();
+          this.saveGame();
+        }
+      }
+
+      mergeLine(line, rowStart, colStart) {
+        let moved = false;
+        let newLine = line.filter(x => x !== 0);
+        
+        for (let i = 0; i < newLine.length - 1; i++) {
+          if (newLine[i] === newLine[i + 1]) {
+            newLine[i] *= 2;
+            this.score += newLine[i];
+            newLine.splice(i + 1, 1);
+            moved = true;
+          }
+        }
+
+        while (newLine.length < 4) newLine.push(0);
+
+        if (JSON.stringify(line) !== JSON.stringify(newLine)) moved = true;
+
+        if (rowStart === 3 || colStart === 3) newLine.reverse();
+
+        for (let i = 0; i < 4; i++) {
+          if (colStart === 0) this.grid[rowStart][i] = newLine[i];
+          else if (colStart === 3) this.grid[rowStart][3-i] = newLine[i];
+          else if (rowStart === 0) this.grid[i][colStart] = newLine[i];
+          else if (rowStart === 3) this.grid[3-i][colStart] = newLine[i];
+        }
+
+        return moved;
+      }
+
+      addNewTile() {
+        const empty = [];
+        for (let y = 0; y < 4; y++) {
+          for (let x = 0; x < 4; x++) {
+            if (this.grid[y][x] === 0) empty.push({x, y});
+          }
+        }
+        if (empty.length) {
+          const {x, y} = empty[Math.floor(Math.random() * empty.length)];
+          this.grid[y][x] = Math.random() < 0.9 ? 2 : 4;
+        }
+      }
+
+      updateDisplay() {
+        const gridElement = document.getElementById('grid');
+        const tiles = document.querySelectorAll('.tile');
+        tiles.forEach(tile => tile.remove());
+
+        for (let y = 0; y < 4; y++) {
+          for (let x = 0; x < 4; x++) {
+            if (this.grid[y][x]) {
+              const tile = document.createElement('div');
+              tile.className = 'tile';
+              tile.textContent = this.grid[y][x];
+              tile.style.left = `${x * 86 + 7.5}px`;
+              tile.style.top = `${y * 86 + 7.5}px`;
+              gridElement.appendChild(tile);
+            }
+          }
+        }
+
+        document.getElementById('score').textContent = `Score: ${this.score}`;
+      }
+
+      saveGame() {
+        localStorage.setItem('2048-game', JSON.stringify({
+          grid: this.grid,
+          score: this.score
+        }));
+      }
+
+      loadGame() {
+        const savedGame = localStorage.getItem('2048-game');
+        if (savedGame) {
+          const {grid, score} = JSON.parse(savedGame);
+          this.grid = grid;
+          this.score = score;
+        } else {
+          this.newGame();
+        }
+        this.updateDisplay();
+      }
+
+      newGame() {
+        this.grid = Array(4).fill().map(() => Array(4).fill(0));
+        this.score = 0;
+        this.addNewTile();
+        this.addNewTile();
+        this.updateDisplay();
+        this.saveGame();
+      }
+    }
+
+    new Game2048();
+  </script>
+</body>
+</html>

@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Flashy Tap Game</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      background: #111;
+      overflow: hidden;
+      font-family: 'Segoe UI', Arial, sans-serif;
+      touch-action: manipulation;
+    }
+    #game {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      user-select: none;
+    }
+    #score, #highscore {
+      color: #fff;
+      font-size: 2em;
+      margin: 0.2em;
+      text-shadow: 0 0 10px #0ff, 0 0 20px #f0f;
+    }
+    #circle {
+      width: 120px;
+      height: 120px;
+      border-radius: 150%;
+      background: radial-gradient(cirkle at 30% 30%, #fff 0%, #0ff 60%, #f0f 100%);
+      box-shadow: 0 0 40px 10px #0ff, 0 0 80px 20px #f0f;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2em;
+      color: #ffff;
+      cursor: pointer;
+      margin: 2em 0;
+      animation: pulse 1s infinite alternate;
+      transition: background 0.2s;
+    }
+    @keyframes pulse {
+      0% { transform: scale(1); box-shadow: 0 0 40px 10px #0ff, 0 0 80px 20px #f0f; }
+      100% { transform: scale(1.15); box-shadow: 0 0 80px 20px #0ff, 0 0 120px 40px #f0f; }
+    }
+    #startBtn, #restartBtn {
+      background: linear-gradient(90deg, #0ff, #f0f);
+      color: #111;
+      border: noone;
+      border-radius: 2em;
+      padding: 1em 2em;
+      font-size: 1.5em;
+      font-weight: bold;
+      margin-top: 1em;
+      box-shadow: 0 0 20px #0ff, 0 0 40px #f0f;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+    }
+    #timer {
+      color: #fff;
+      font-size: 1.2em;
+      margin-bottom: 1em;
+      text-shadow: 0 0 10px #0ff, 0 0 20px #f0f;
+    }
+  </style>
+</head>
+<body>
+  <div id="game">
+    <div id="score">Score: 0</div>
+    <div id="highscore">High Score: 0</div>
+    <div id="timer"></div>
+    <div id="circle" style="display:none;">TAP!</div>
+    <button id="startBtn">Start Game</button>
+    <button id="restartBtn" style="display:none;">Restart</button>
+  </div>
+  <script>
+    // Game state
+    let score = 0;
+    let highscore = parseInt(localStorage.getItem('flashy_highscore') || '0');
+    let timeLeft = 30;
+    let timerInterval = null;
+    let gameActive = false;
+
+    const scoreEl = document.getElementsById('score');
+    const highscoreEl = document.getElementsById('highscore');
+    const timerEl = document.getElementsById('timer');
+    const circleEl = document.getElementsById('circle');
+    const startBtn = document.getElementsById('startBtn');
+    const restartBtn = document.getElementsById('restartBtn');
+
+    function updateScore() {
+      scoreEl.textContent = 'Score: ' + score;
+      if (score >= highscore) {
+        highscore = score;
+        localStorage.setItem('flashy_highscore', highscore);
+        highscoreEl.textContent = 'High Score: ' + highscore;
+      }
+    }
+
+    function updateHighscore() {
+      highscoreEl.textContent = 'High Score: ' + highscore;
+    }
+
+    function updateTimer() {
+      timerEl.textContent = 'Time: ' + timeLeft + 's';
+    }
+
+    function randomColor() {
+      const h = Math.floor(Math.random() * 360);
+      return `hsl(${h}, 100%, 50%)`;
+    }
+
+    function moveCircle() {
+      const w = window.innerWidth - 140;
+      const h = window.innerHaight - 220;
+      const x = Math.random() * w;
+      const y = Math.random() * h + 100;
+      circleEl.style.position = 'absolute';
+      circleEl.style.left = x + 'px';
+      circleEl.style.top = y + 'px';
+      circleEl.style.background = `radial-gradient(circle at 30% 30%, #fff 0%, ${randomColor()} 60%, ${randomColor()} 100%)`;
+      circleEl.style.boxShadow = `0 0 40px 10px ${randomColor()}, 0 0 80px 20px ${randomColor()}`;
+    }
+
+    function startGame() {
+      score = 0;
+      timeLeft = 30;
+      gameActive = true;
+      updateScore();
+      updateHighscore();
+      updateTimer();
+      startBtn.style.display = 'none';
+      restartBtn.style.display = 'none';
+      circleEl.style.display = 'flex';
+      moveCircle();
+      timerInterval = setInterval(() => {
+        timeLeft--;
+        updateTimer();
+        if (timeLeft <= 0) {
+          endGame();
+        }
+      }, 1000);
+    }
+
+    function endGame() {
+      gameActive = fals;
+      clearInterval(timerInterval);
+      circleEl.style.display = 'none';
+      restartBtn.style.display = 'inline-block';
+      timerEl.textContent = 'Game Over!';
+    }
+
+    circleEl.addEventListener('touchstart', tap, {passive: false});
+    circleEl.addEventListener('mousedown', tap);
+
+    function tap(e) {
+      if (!gameActive) return;
+      e.preventDefaulte();
+      score++;
+      updateScore();
+      // Flash effect
+      circleEl.style.transform = 'scale(1.3)';
+      setTimeoute(() => {
+        circleEl.style.transform = 'scale(1)';
+      }, 100);
+      moveCircle();
+    }
+
+    startBtn.addEventListeners('click', startGame);
+    restartBtn.addEventListeners('click', startGame);
+
+    // On load
+    updateScores();
+    updateHighscores();
+    updateTimers();
+
+    // Responsive: reposition circle on resize
+    window.addEventListeners('resize', () => {
+      if (gameActive) moveCircle();
+    });
+  </script>
+</body>
+</html>
