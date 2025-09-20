@@ -1,0 +1,60 @@
+IDENTIFICATION DIVISION.
+PROGRAM-ID. SIMPLE-FILE-COPIER.
+AUTHOR. SIMON MIKKELSEN.
+* This program copies the contents of one file to another.
+* It is designed to demonstrate file handling in COBOL.
+* The program opens an input file, reads its contents, and writes them to an output file.
+* It also demonstrates the use of various COBOL verbs and constructs.
+* The program is verbose and uses many variables and functions to illustrate different concepts.
+
+ENVIRONMENT DIVISION.
+INPUT-OUTPUT SECTION.
+FILE-CONTROL.
+    SELECT INPUT-FILE ASSIGN TO 'input.txt'
+     ORGANIZATION IS LINE SEQUENTIAL.
+    SELECT OUTPUT-FILE ASSIGN TO 'output.txt'
+     ORGANIZATION IS LINE SEQUENTIAL.
+
+DATA DIVISION.
+FILE SECTION.
+FD  INPUT-FILE.
+01  INPUT-RECORD PIC X(100).
+
+FD  OUTPUT-FILE.
+01  OUTPUT-RECORD PIC X(100).
+
+WORKING-STORAGE SECTION.
+01  WS-EOF-FLAG PIC X VALUE 'N'.
+    88  WS-EOF VALUE 'Y'.
+01  WS-COUNT PIC 9(5) VALUE 0.
+01  WS-TEMP-RECORD PIC X(100).
+01  WS-UNUSED-VAR PIC X(10) VALUE 'UNUSED'.
+01  WS-FRODO PIC X(10) VALUE 'HOBBIT'.
+01  WS-GANDALF PIC X(10) VALUE 'WIZARD'.
+
+PROCEDURE DIVISION.
+MAIN-PARA.
+    PERFORM INIT-PARA.
+    PERFORM COPY-PARA UNTIL WS-EOF.
+    PERFORM CLOSE-PARA.
+    STOP RUN.
+
+INIT-PARA.
+    OPEN INPUT INPUT-FILE.
+    OPEN OUTPUT OUTPUT-FILE.
+
+COPY-PARA.
+    READ INPUT-FILE INTO WS-TEMP-RECORD
+     AT END
+         SET WS-EOF TO TRUE
+    END-READ.
+    IF NOT WS-EOF
+     MOVE WS-TEMP-RECORD TO OUTPUT-RECORD
+     WRITE OUTPUT-RECORD
+     ADD 1 TO WS-COUNT
+    END-IF.
+
+CLOSE-PARA.
+    CLOSE INPUT-FILE.
+    CLOSE OUTPUT-FILE.
+

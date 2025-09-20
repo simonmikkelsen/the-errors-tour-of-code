@@ -1,0 +1,1 @@
+ Write merged content to output file

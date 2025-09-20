@@ -1,0 +1,2 @@
+ files
+        mergeFiles(filesToMerge, outputFile);

@@ -1,0 +1,1 @@
+(ByVal a As Complex, ByVal b As Complex) As Complex

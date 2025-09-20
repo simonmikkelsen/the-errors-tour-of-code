@@ -1,0 +1,1 @@
+ Function to read random file content

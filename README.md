@@ -1,5 +1,6 @@
 # the-errors-tour-of-code
 Individual pieces of code that contain programming errors, meant for students and developers to train spotting errors. For that reason comments may say something else than the program does and not all files can compile or run individually.
+<<<<<<< HEAD
 
 # Errors
 
@@ -62,3 +63,5 @@ Individual pieces of code that contain programming errors, meant for students an
 
 1. The game loop condition is incorrect, causing the game to never end.
 2. The score update logic is flawed, leading to incorrect score calculation.
+=======
+>>>>>>> a4ae8caacbe92fb6ebe0ae2abdb47e5a12e03907

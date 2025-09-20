@@ -1,0 +1,2 @@
+
+    MOVE SPACES TO TEMP-VAR8
